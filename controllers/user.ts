@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 
 import User from '../models/user';
+import { generateToken } from '../utils/jwt';
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -31,4 +32,30 @@ const register = async (req: Request, res: Response) => {
   }
 };
 
-export { register };
+const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email: email });
+    if (!user)
+      return res
+        .status(401)
+        .json({ message: 'Invalid Credentials', ok: false });
+
+    const matchPass = await bcrypt.compare(password, user.password);
+    if (!matchPass)
+      return res
+        .status(401)
+        .json({ message: 'Invalid Credentials', ok: false });
+
+    const token = generateToken(user._id.toString());
+    res
+      .status(200)
+      .json({ message: 'Login Successfully', ok: true, data: token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error', ok: false });
+  }
+};
+
+export { register, login };
