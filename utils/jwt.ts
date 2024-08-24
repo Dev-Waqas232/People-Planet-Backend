@@ -7,4 +7,17 @@ const generateToken = (id: string) => {
   return token;
 };
 
-export { generateToken };
+const verifyToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as jwt.JwtPayload;
+    return decoded.id;
+  } catch (error) {
+    console.error('Token Verification Failed');
+    return null;
+  }
+};
+
+export { generateToken, verifyToken };

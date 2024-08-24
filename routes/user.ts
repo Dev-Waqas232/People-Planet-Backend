@@ -1,5 +1,6 @@
 import express from 'express';
-import { login, register } from '../controllers/user';
+import { getUserData, login, register } from '../controllers/user';
+import { authorize } from '../middlewares';
 
 const router = express.Router();
 
@@ -12,5 +13,10 @@ router.post('/auth/register', register);
 // @desc Login User
 // @access Public
 router.post('/auth/login', login);
+
+// @route GET /api/users/:profileId
+// @desc Get User Profile
+// @access Private
+router.get('/:profileId', authorize, getUserData);
 
 export default router;

@@ -58,4 +58,8 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-export { register, login };
+const getUserData = async (req: Request, res: Response) => {
+  console.log(req.userId);
+};
+
+export { register, login, getUserData };
