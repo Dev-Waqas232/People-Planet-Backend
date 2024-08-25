@@ -51,7 +51,7 @@ const login = async (req: Request, res: Response) => {
     const token = generateToken(user._id.toString());
     res
       .status(200)
-      .json({ message: 'Login Successfully', ok: true, data: token });
+      .json({ message: 'Login Successfully', ok: true, data: { token, user } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error', ok: false });
