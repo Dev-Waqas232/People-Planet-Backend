@@ -59,7 +59,21 @@ const login = async (req: Request, res: Response) => {
 };
 
 const getUserData = async (req: Request, res: Response) => {
-  console.log(req.userId);
+  const { profileId } = req.params;
+  try {
+    const user = await User.findById(profileId).select('-password');
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "Profile Doesn't Exist", ok: false });
+
+    res
+      .status(200)
+      .json({ message: 'Data Fetched Successfully', ok: true, data: user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error', ok: false });
+  }
 };
 
 export { register, login, getUserData };
