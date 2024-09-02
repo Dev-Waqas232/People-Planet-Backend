@@ -58,7 +58,7 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-const getUserData = async (req: Request, res: Response) => {
+const getUser = async (req: Request, res: Response) => {
   const { profileId } = req.params;
   try {
     const user = await User.findById(profileId).select('-password');
@@ -76,4 +76,31 @@ const getUserData = async (req: Request, res: Response) => {
   }
 };
 
-export { register, login, getUserData };
+const updateUser = async (req: Request, res: Response) => {
+  const { profileId } = req.params;
+  try {
+    const user = await User.findById(profileId);
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "Profile Doesn't Exists", ok: false });
+
+    const { firstName, lastName, dob, email } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(
+      profileId,
+      { firstName, lastName, dob, email },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      message: 'Profile Updated Successfully',
+      ok: true,
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error', ok: false });
+  }
+};
+
+export { register, login, getUser, updateUser };
