@@ -86,6 +86,13 @@ const updateUser = async (req: Request, res: Response) => {
         .json({ message: "Profile Doesn't Exists", ok: false });
 
     const { firstName, lastName, dob, email } = req.body;
+
+    const checkEmail = await User.findOne({ email, _id: { $ne: profileId } });
+    if (checkEmail)
+      return res
+        .status(409)
+        .json({ message: 'Email already exists', ok: false });
+
     const updatedUser = await User.findByIdAndUpdate(
       profileId,
       { firstName, lastName, dob, email },
