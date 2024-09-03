@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 
 import User from '../models/user';
 import { generateToken } from '../utils/jwt';
+import { sendResetEmail } from '../utils/nodeMailer';
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -110,4 +111,28 @@ const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-export { register, login, getUser, updateUser };
+const requestReset = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  try {
+    const token = generateToken(email);
+    const resetTokenExpiry = Date.now() + 3600000;
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "Email doesn't exists", ok: false });
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = new Date(resetTokenExpiry);
+
+    await user.save();
+    await sendResetEmail(user.email, token);
+    res.status(200).json({ message: 'Password reset email sent', ok: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error', ok: false });
+  }
+};
+
+export { register, login, getUser, updateUser, requestReset };

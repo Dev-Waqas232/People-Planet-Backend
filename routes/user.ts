@@ -14,6 +14,11 @@ router.post('/auth/register', register);
 // @access Public
 router.post('/auth/login', login);
 
+// @route POST /api/users/auth/request-reset
+// @desc Request Password Reset
+// @access Public
+router.post('/auth/request-reset');
+
 // @route GET /api/users/:profileId
 // @desc Get User Profile
 // @access Private
