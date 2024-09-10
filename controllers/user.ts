@@ -155,6 +155,7 @@ const resetPassword = async (req: Request, res: Response) => {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 
+    // TODO Invalid jwt token
     res
       .status(201)
       .json({ message: 'Password updated successfully', ok: true });
