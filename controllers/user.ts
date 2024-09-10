@@ -40,13 +40,13 @@ const login = async (req: Request, res: Response) => {
     const user = await User.findOne({ email: email });
     if (!user)
       return res
-        .status(401)
+        .status(404)
         .json({ message: 'Invalid Credentials', ok: false });
 
     const matchPass = await bcrypt.compare(password, user.password);
     if (!matchPass)
       return res
-        .status(401)
+        .status(404)
         .json({ message: 'Invalid Credentials', ok: false });
 
     const token = generateToken(user._id.toString());
@@ -135,4 +135,35 @@ const requestReset = async (req: Request, res: Response) => {
   }
 };
 
-export { register, login, getUser, updateUser, requestReset };
+const resetPassword = async (req: Request, res: Response) => {
+  const { token, password } = req.body;
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "Can't reset password. Please try again", ok: false });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    res
+      .status(201)
+      .json({ message: 'Password updated successfully', ok: true });
+
+    await user.save();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error', ok: false });
+  }
+};
+
+export { register, login, getUser, updateUser, requestReset, resetPassword };
