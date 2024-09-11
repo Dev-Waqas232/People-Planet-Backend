@@ -7,8 +7,9 @@ import mongoose from 'mongoose';
 const createPost = async (req: Request, res: Response) => {
   const { content } = req.body;
   const { userId } = req;
+  const image = req.file ? req.file.fieldname : null;
   try {
-    const post = await Post.create({ content, createdBy: userId });
+    const post = await Post.create({ content, image, createdBy: userId });
     res
       .status(201)
       .json({ message: 'Post Created Succesfully', ok: true, data: post });
