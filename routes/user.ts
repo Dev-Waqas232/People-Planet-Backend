@@ -8,6 +8,7 @@ import {
   updateUser,
 } from '../controllers/user';
 import { authorize } from '../middlewares';
+import { upload } from '../middlewares/upload';
 
 const router = express.Router();
 
@@ -39,6 +40,6 @@ router.get('/:profileId', authorize, getUser);
 // @route PUT /api/users/:profileId
 // @desc Get User Profile
 // @access Private
-router.put('/:profileId', authorize, updateUser);
+router.put('/:profileId', authorize, upload.single('image'), updateUser);
 
 export default router;

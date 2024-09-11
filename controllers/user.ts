@@ -79,6 +79,8 @@ const getUser = async (req: Request, res: Response) => {
 
 const updateUser = async (req: Request, res: Response) => {
   const { profileId } = req.params;
+  const image = req.file ? req.file.filename : null;
+
   try {
     const user = await User.findById(profileId);
     if (!user)
@@ -96,7 +98,7 @@ const updateUser = async (req: Request, res: Response) => {
 
     const updatedUser = await User.findByIdAndUpdate(
       profileId,
-      { firstName, lastName, dob, email },
+      { firstName, lastName, dob, email, profilePicture: image },
       { new: true, runValidators: true }
     );
 
