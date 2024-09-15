@@ -65,4 +65,20 @@ const deletePost = async (req: Request, res: Response) => {
   }
 };
 
-export { createPost, updatePost, deletePost };
+const getPosts = async (req: Request, res: Response) => {
+  const { userId } = req.query;
+  try {
+    let posts;
+    if (userId) {
+      posts = await Post.find({ createdBy: userId });
+    } else {
+      posts = await Post.find({ createdBy: { $ne: req.userId } });
+    }
+    res.status(200).json({ message: 'Posts Fetched', ok: true, data: posts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error', ok: false });
+  }
+};
+
+export { createPost, updatePost, deletePost, getPosts };
