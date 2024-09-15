@@ -7,7 +7,8 @@ import mongoose from 'mongoose';
 const createPost = async (req: Request, res: Response) => {
   const { content } = req.body;
   const { userId } = req;
-  const image = req.file ? req.file.fieldname : null;
+  const image = req.file ? req.file.filename : null;
+
   try {
     const post = await Post.create({ content, image, createdBy: userId });
     res
@@ -70,15 +71,13 @@ const getPosts = async (req: Request, res: Response) => {
   try {
     let posts;
     if (userId) {
-      posts = await Post.find({ createdBy: userId }).populate(
-        'createdBy',
-        'firstName lastName profilePicture'
-      );
+      posts = await Post.find({ createdBy: userId })
+        .populate('createdBy', 'firstName lastName profilePicture')
+        .sort({ createdAt: -1 });
     } else {
-      posts = await Post.find({ createdBy: { $ne: req.userId } }).populate(
-        'createdBy',
-        'firstName lastName profilePicture'
-      );
+      posts = await Post.find({ createdBy: { $ne: req.userId } })
+        .populate('createdBy', 'firstName lastName profilePicture')
+        .sort({ createdAt: -1 });
     }
 
     res.status(200).json({ message: 'Posts Fetched', ok: true, data: posts });
