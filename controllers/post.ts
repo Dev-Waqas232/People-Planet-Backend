@@ -70,10 +70,17 @@ const getPosts = async (req: Request, res: Response) => {
   try {
     let posts;
     if (userId) {
-      posts = await Post.find({ createdBy: userId });
+      posts = await Post.find({ createdBy: userId }).populate(
+        'createdBy',
+        'firstName lastName profilePicture'
+      );
     } else {
-      posts = await Post.find({ createdBy: { $ne: req.userId } });
+      posts = await Post.find({ createdBy: { $ne: req.userId } }).populate(
+        'createdBy',
+        'firstName lastName profilePicture'
+      );
     }
+
     res.status(200).json({ message: 'Posts Fetched', ok: true, data: posts });
   } catch (error) {
     console.error(error);
