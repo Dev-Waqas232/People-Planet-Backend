@@ -145,7 +145,8 @@ const suggestFriends = async (req: Request, res: Response) => {
 
     const users = await User.find({ _id: { $nin: excludeUserIds } })
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(10)
+      .select('firstName lastName profilePicture _id');
 
     res
       .status(200)
