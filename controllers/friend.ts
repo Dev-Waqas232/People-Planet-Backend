@@ -132,7 +132,18 @@ const removeFriend = async (req: Request, res: Response) => {
 const suggestFriends = async (req: Request, res: Response) => {
   const userId = req.userId;
   try {
-    const users = await User.find({ _id: { $ne: userId } })
+    const currentUser = await User.findById(userId).select(
+      'friends friendRequestsReceived friendRequestsSent'
+    );
+
+    const excludeUserIds = [
+      ...currentUser!.friends,
+      ...currentUser!.friendRequestsReceived,
+      ...currentUser!.friendRequestsSent,
+      userId,
+    ];
+
+    const users = await User.find({ _id: { $nin: excludeUserIds } })
       .sort({ createdAt: -1 })
       .limit(10);
 
