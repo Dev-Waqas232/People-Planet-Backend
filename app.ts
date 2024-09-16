@@ -6,6 +6,7 @@ import path from 'path';
 
 import userRoutes from './routes/user';
 import postRoutes from './routes/post';
+import friendRoutes from './routes/post';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/friends', friendRoutes);
 
 const PORT = process.env.PORT || 5000;
 
