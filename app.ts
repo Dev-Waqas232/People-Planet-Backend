@@ -6,7 +6,7 @@ import path from 'path';
 
 import userRoutes from './routes/user';
 import postRoutes from './routes/post';
-import friendRoutes from './routes/post';
+import friendRoutes from './routes/friend';
 
 dotenv.config();
 
