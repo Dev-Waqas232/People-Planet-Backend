@@ -129,9 +129,26 @@ const removeFriend = async (req: Request, res: Response) => {
   }
 };
 
+const suggestFriends = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  try {
+    const users = await User.find({ _id: { $ne: userId } })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res
+      .status(200)
+      .json({ message: 'Fetched Suggestions', ok: true, data: users });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error', ok: false });
+  }
+};
+
 export {
   sendFriendRequest,
   acceptFriendRequest,
   cancelFriendRequest,
   removeFriend,
+  suggestFriends,
 };
