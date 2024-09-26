@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import Post from '../models/post';
 import Comment from '../models/comment';
 import mongoose from 'mongoose';
+import User from '../models/user';
 
 const createPost = async (req: Request, res: Response) => {
   const { content } = req.body;
@@ -65,20 +66,29 @@ const deletePost = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal Server Error', ok: false });
   }
 };
-
 const getPosts = async (req: Request, res: Response) => {
-  const { userId } = req.query;
+  const currentUserId = req.userId;
+
   try {
-    let posts;
-    if (userId) {
-      posts = await Post.find({ createdBy: userId })
-        .populate('createdBy', 'firstName lastName profilePicture')
-        .sort({ createdAt: -1 });
-    } else {
-      posts = await Post.find({ createdBy: { $ne: req.userId } })
-        .populate('createdBy', 'firstName lastName profilePicture')
-        .sort({ createdAt: -1 });
+    const currentUser = await User.findById(currentUserId).select('friends');
+    if (!currentUser) {
+      return res.status(404).json({ message: 'User not found', ok: false });
     }
+
+    const friendsList = currentUser.friends;
+    if (friendsList.length === 0) {
+      return res
+        .status(200)
+        .json({
+          message: 'No posts found. You have no friends yet!',
+          ok: true,
+          data: [],
+        });
+    }
+
+    const posts = await Post.find({ createdBy: { $in: friendsList } })
+      .populate('createdBy', 'firstName lastName profilePicture')
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ message: 'Posts Fetched', ok: true, data: posts });
   } catch (error) {
