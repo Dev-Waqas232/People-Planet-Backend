@@ -66,10 +66,22 @@ const deletePost = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal Server Error', ok: false });
   }
 };
+
 const getPosts = async (req: Request, res: Response) => {
+  const { userId } = req.query;
   const currentUserId = req.userId;
 
   try {
+    if (userId) {
+      const posts = await Post.find({ createdBy: userId })
+        .populate('createdBy', 'firstName lastName profilePicture')
+        .sort({ createdAt: -1 });
+
+      return res
+        .status(200)
+        .json({ message: 'Posts Fetched', ok: true, data: posts });
+    }
+
     const currentUser = await User.findById(currentUserId).select('friends');
     if (!currentUser) {
       return res.status(404).json({ message: 'User not found', ok: false });
@@ -77,13 +89,11 @@ const getPosts = async (req: Request, res: Response) => {
 
     const friendsList = currentUser.friends;
     if (friendsList.length === 0) {
-      return res
-        .status(200)
-        .json({
-          message: 'No posts found. You have no friends yet!',
-          ok: true,
-          data: [],
-        });
+      return res.status(200).json({
+        message: 'No posts found. You have no friends yet!',
+        ok: true,
+        data: [],
+      });
     }
 
     const posts = await Post.find({ createdBy: { $in: friendsList } })
