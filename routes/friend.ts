@@ -2,6 +2,7 @@ import express from 'express';
 import {
   acceptFriendRequest,
   cancelFriendRequest,
+  fetchUserFriends,
   removeFriend,
   sendFriendRequest,
   suggestFriends,
@@ -17,6 +18,8 @@ router.post('/accept-request', authorize, acceptFriendRequest);
 router.post('/cancel-request', authorize, cancelFriendRequest);
 
 router.post('/remove-friend', authorize, removeFriend);
+
+router.get('/fetch-friends', authorize, fetchUserFriends);
 
 router.get('/', authorize, suggestFriends);
 

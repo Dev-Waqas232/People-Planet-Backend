@@ -24,9 +24,18 @@ const sendFriendRequest = async (req: Request, res: Response) => {
     await user?.save();
     await friend?.save();
 
+    const response = await Promise.all(
+      user!.friendRequestsSent.map(async (id) => {
+        const requestedFriend = await User.findById(id).select(
+          'firstName lastName profilePicture'
+        );
+        return requestedFriend;
+      })
+    );
+
     res
       .status(200)
-      .json({ message: 'Friend Request Sent', ok: true, data: user });
+      .json({ message: 'Friend Request Sent', ok: true, data: response });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error', ok: false });
@@ -51,7 +60,7 @@ const acceptFriendRequest = async (req: Request, res: Response) => {
     friend?.friends.push(user._id);
 
     user.friendRequestsReceived = user.friendRequestsReceived.filter(
-      (id) => id.toString !== friendId
+      (id) => id.toString() !== friendId
     );
 
     friend.friendRequestsSent = friend?.friendRequestsSent.filter(
@@ -61,9 +70,18 @@ const acceptFriendRequest = async (req: Request, res: Response) => {
     await user.save();
     await friend.save();
 
+    const response = await Promise.all(
+      user!.friends.map(async (id) => {
+        const requestedFriend = await User.findById(id).select(
+          'firstName lastName profilePicture'
+        );
+        return requestedFriend;
+      })
+    );
+
     res
       .status(200)
-      .json({ message: 'Friend Request Accepted', ok: true, data: user });
+      .json({ message: 'Friend Request Accepted', ok: true, data: response });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error', ok: false });
@@ -91,9 +109,11 @@ const cancelFriendRequest = async (req: Request, res: Response) => {
     await user.save();
     await friend.save();
 
-    res
-      .status(200)
-      .json({ message: 'Friend Request Cancelled', ok: false, data: user });
+    res.status(200).json({
+      message: 'Friend Request Cancelled',
+      ok: true,
+      data: { friendId },
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error', ok: false });
@@ -111,9 +131,7 @@ const removeFriend = async (req: Request, res: Response) => {
     if (!friend || !user)
       return res.status(404).json({ message: 'Friend not found', ok: false });
 
-    user.friends = user.friends.filter(
-      (id) => id.toString !== friendId.toString()
-    );
+    user.friends = user.friends.filter((id) => id.toString() !== friendId);
 
     friend.friends = friend.friends.filter(
       (id) => id.toString() !== userId.toString()
@@ -122,7 +140,9 @@ const removeFriend = async (req: Request, res: Response) => {
     await user.save();
     await friend.save();
 
-    res.status(200).json({ message: 'Removed Friend', ok: true, data: user });
+    res
+      .status(200)
+      .json({ message: 'Removed Friend', ok: true, data: friendId });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error', ok: false });
@@ -157,10 +177,61 @@ const suggestFriends = async (req: Request, res: Response) => {
   }
 };
 
+const fetchUserFriends = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found', ok: false });
+    }
+
+    const friends = await Promise.all(
+      user!.friends.map(async (id) => {
+        const requestedFriend = await User.findById(id).select(
+          'firstName lastName profilePicture'
+        );
+        return requestedFriend;
+      })
+    );
+
+    const friendRequestsSent = await Promise.all(
+      user.friendRequestsSent.map(async (id) => {
+        const requestedFriend = await User.findById(id).select(
+          'firstName lastName profilePicture'
+        );
+        return requestedFriend;
+      })
+    );
+
+    const friendRequestsReceived = await Promise.all(
+      user.friendRequestsReceived.map(async (id) => {
+        const requestedFriend = await User.findById(id).select(
+          'firstName lastName profilePicture'
+        );
+        return requestedFriend;
+      })
+    );
+
+    res.status(200).json({
+      message: 'Data Fetched',
+      ok: true,
+      data: {
+        friends,
+        friendRequestsSent,
+        friendRequestsReceived,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error', ok: false });
+  }
+};
+
 export {
   sendFriendRequest,
   acceptFriendRequest,
   cancelFriendRequest,
   removeFriend,
   suggestFriends,
+  fetchUserFriends,
 };
